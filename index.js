@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const app = express();
 app.use(cors());
+app.use(express.json()); 
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
@@ -25,6 +26,18 @@ app.get('/animales/:pais', async (req, res) => {
   }
 
   res.json(data);
+});
+
+app.post("/add-animal", async (req, res) => {
+  const { name, description, image_url, country } = req.body;
+  
+
+  const { data, error } = await supabase
+    .from("animals")
+    .insert([{ name, description, image_url, country, wikipedia_title: name }]);
+
+  if (error) return res.status(400).json({ error: error.message });
+  res.json({ success: true, data });
 });
 
 const PORT = 4000;
