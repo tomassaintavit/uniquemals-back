@@ -40,6 +40,50 @@ app.post("/add-animal", async (req, res) => {
   res.json({ success: true, data });
 });
 
+// Obtener un animal por id
+app.get("/animal/:id", async (req, res) => {
+  const { id } = req.params;
+  const { data, error } = await supabase
+    .from("animals")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) return res.status(400).json({ error: error.message });
+  res.json(data);
+});
+
+// Eliminar un animal
+app.delete("/animal/:id", async (req, res) => {
+  const { id } = req.params;
+  const { error } = await supabase
+    .from("animals")
+    .delete()
+    .eq("id", id);
+
+  if (error) return res.status(400).json({ error: error.message });
+  res.json({ success: true });
+});
+
+// Actualizar un animal por id
+app.put("/animal/:id", async (req, res) => {
+  const { id } = req.params;
+  const { name, description, image_url } = req.body;
+
+  const { data, error } = await supabase
+    .from("animals")
+    .update({ name, description, image_url })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  res.json(data);
+});
+
 const PORT = 4000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
