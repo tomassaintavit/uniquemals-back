@@ -8,8 +8,13 @@ const app = express();
 // app.use(cors());
 //Para prod
 app.use(cors({
-  origin: ["http://localhost:5173", "https://uniquemals.vercel.app/"],
-  credentials: true
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:3000",   // por si usas CRA
+    "https://uniquemals.vercel.app"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 app.use(express.json()); 
 
