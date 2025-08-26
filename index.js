@@ -10,22 +10,30 @@ app.use(express.json());
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
-// Ruta para obtener animales de un país
-app.get('/animales/:pais', async (req, res) => {
-  const pais = req.params.pais;
 
-  const { data, error } = await supabase
-    .from('animals')
-    .select('*')
-    .eq('country', pais)
-    .order('name', { ascending: true });
+app.get("/animales/:pais", async (req, res) => {
+  const  pais  = req.params.pais;
+  const limit = parseInt(req.query.limit) || 20;
+  const offset = parseInt(req.query.offset) || 0;
 
-  if (error) {
-    console.error(error);
-    return res.status(500).json({ error: 'Error al consultar la base de datos' });
+  try {
+    const { data, error } = await supabase
+      .from("animals")
+      .select("*", { count: "exact" }) // 👈 count para saber cuántos hay en total
+      .eq("country", pais)
+      .order("id", { ascending: true })
+      .range(offset, offset + limit - 1);
+
+    if (error) throw error;
+
+    res.json({
+      animals: data,
+      total: data?.length > 0 ? data[0].count : 0, // ⚠️ algunos drivers de supabase requieren otra query para el total
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al traer animales" });
   }
-
-  res.json(data);
 });
 
 app.post("/add-animal", async (req, res) => {
